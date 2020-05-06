@@ -571,7 +571,7 @@ int main(int ArgCount, char** Args)
         DeviceCreateInfo.queueCreateInfoCount = 1;
         DeviceCreateInfo.pQueueCreateInfos = &QueueCreateInfo;
         DeviceCreateInfo.enabledLayerCount = 0;
-        DeviceCreateInfo.ppEnabledExtensionNames = nullptr;
+        DeviceCreateInfo.ppEnabledLayerNames = nullptr;
         DeviceCreateInfo.enabledExtensionCount = EnabledDeviceExtensionCount;
         DeviceCreateInfo.ppEnabledExtensionNames = EnabledDeviceExtensions;
         DeviceCreateInfo.pEnabledFeatures = nullptr;
