@@ -89,8 +89,7 @@ struct SVulkanState
     std::vector<VkImage> SwapchainImages;
     std::vector<VkImageView> SwapchainImageViews;
 
-    VkShaderModule VertexShader;
-    VkShaderModule FragmentShader;
+    VkShaderModule Shader;
 
     VkRenderPass RenderPass;
     VkPipeline Pipeline;
@@ -176,7 +175,7 @@ HWND win32OpenWindow(const char* Title, int32_t Width, int32_t Height)
     WindowClass.lpszClassName = "vkclass";
 
     assert(RegisterClass(&WindowClass));
-
+    
     int32_t MonitorWidth, MonitorHeight;
     {
         POINT P = { 0, 0 };
@@ -644,29 +643,14 @@ int main(int ArgCount, char** Args)
     {
         // Create shader modules
         {
-            SBuffer VertexShaderBin = win32LoadFile("Shaders/vert.spv");
+            SBuffer ShaderBin = win32LoadFile("Shaders/shader.spv");
 
-            VkShaderModuleCreateInfo VertexShaderCreateInfo = { VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO };
-            VertexShaderCreateInfo.pNext = nullptr;
-            VertexShaderCreateInfo.flags = 0;
-            VertexShaderCreateInfo.codeSize = VertexShaderBin.Size;
-            VertexShaderCreateInfo.pCode = (uint32_t*)VertexShaderBin.Data;
-
-            vkCreateShaderModule(VulkanState.Device, &VertexShaderCreateInfo, nullptr, &VulkanState.VertexShader);
-
-            ReleaseBuffer(&VertexShaderBin);
-
-            SBuffer FragmentShaderBin = win32LoadFile("Shaders/frag.spv");
-
-            VkShaderModuleCreateInfo FragmentShaderCreateInfo = { VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO };
-            FragmentShaderCreateInfo.pNext = nullptr;
-            FragmentShaderCreateInfo.flags = 0;
-            FragmentShaderCreateInfo.codeSize = FragmentShaderBin.Size;
-            FragmentShaderCreateInfo.pCode = (uint32_t*)FragmentShaderBin.Data;
-
-            vkCreateShaderModule(VulkanState.Device, &FragmentShaderCreateInfo, nullptr, &VulkanState.FragmentShader);
-
-            ReleaseBuffer(&FragmentShaderBin);
+            VkShaderModuleCreateInfo ShaderCreateInfo = { VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO };
+            ShaderCreateInfo.pNext = nullptr;
+            ShaderCreateInfo.flags = 0;
+            ShaderCreateInfo.codeSize = ShaderBin.Size;
+            ShaderCreateInfo.pCode = (uint32_t*)ShaderBin.Data;
+            vkCreateShaderModule(VulkanState.Device, &ShaderCreateInfo, nullptr, &VulkanState.Shader);
         }
 
         /* ================================== */
@@ -674,7 +658,7 @@ int main(int ArgCount, char** Args)
         VertexShaderStage.pNext = nullptr;
         VertexShaderStage.flags = 0;
         VertexShaderStage.stage = VK_SHADER_STAGE_VERTEX_BIT;
-        VertexShaderStage.module = VulkanState.VertexShader;
+        VertexShaderStage.module = VulkanState.Shader;
         VertexShaderStage.pName = "main";
         VertexShaderStage.pSpecializationInfo = nullptr;
 
@@ -682,7 +666,7 @@ int main(int ArgCount, char** Args)
         FragmentShaderStage.pNext = nullptr;
         FragmentShaderStage.flags = 0;
         FragmentShaderStage.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-        FragmentShaderStage.module = VulkanState.FragmentShader;
+        FragmentShaderStage.module = VulkanState.Shader;
         FragmentShaderStage.pName = "main";
         FragmentShaderStage.pSpecializationInfo = nullptr;
 
@@ -955,6 +939,7 @@ int main(int ArgCount, char** Args)
             DispatchMessage(&Message);
         }
 
+
         // Render
         {
             uint32_t ImageIndex;
@@ -984,7 +969,7 @@ int main(int ArgCount, char** Args)
             PresentInfo.pSwapchains = &VulkanState.Swapchain;
             PresentInfo.pImageIndices = &ImageIndex;
             PresentInfo.pResults = nullptr;
-
+            
             vkQueuePresentKHR(VulkanState.Queue, &PresentInfo);
             vkQueueWaitIdle(VulkanState.Queue);
         }
